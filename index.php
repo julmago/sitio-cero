@@ -1,3 +1,68 @@
+<?php
+
+declare(strict_types=1);
+
+require __DIR__ . '/includes/db.php';
+
+$defaultStats = [
+    ['value' => '3.2x', 'label' => 'Crecimiento promedio'],
+    ['value' => '48h', 'label' => 'Tiempo de respuesta'],
+    ['value' => '92%', 'label' => 'Clientes recurrentes'],
+];
+$defaultServices = [
+    ['title' => 'Branding & Identidad', 'description' => 'Nombres, logo, tono y storytelling coherentes para posicionar tu negocio.'],
+    ['title' => 'Diseño Web', 'description' => 'Interfaces modernas, rápidas y responsivas listas para convertir visitas en clientes.'],
+    ['title' => 'Marketing Digital', 'description' => 'Campañas en redes sociales y paid media con analítica avanzada para optimizar la inversión.'],
+    ['title' => 'Contenido & Foto', 'description' => 'Producción audiovisual profesional para redes, e-commerce y lanzamientos.'],
+];
+$defaultProcess = [
+    ['step' => '01', 'title' => 'Diagnóstico', 'description' => 'Analizamos tu marca, competencia y objetivos para definir oportunidades reales.'],
+    ['step' => '02', 'title' => 'Concepto creativo', 'description' => 'Diseñamos una propuesta visual y narrativa alineada a tu audiencia.'],
+    ['step' => '03', 'title' => 'Ejecución + medición', 'description' => 'Lanzamos, medimos y ajustamos para maximizar impacto y ventas.'],
+];
+$defaultTestimonials = [
+    ['quote' => '"Nos ayudaron a relanzar nuestra marca y duplicamos las ventas en tres meses."', 'author' => 'Ana Torres · Retail Fashion'],
+    ['quote' => '"El nuevo sitio es rápido, elegante y los leads aumentaron desde la primera semana."', 'author' => 'Camilo Vargas · SaaS B2B'],
+    ['quote' => '"Nos encanta el equipo: creativos, ordenados y siempre con propuestas frescas."', 'author' => 'Lucía Gómez · Gastronomía'],
+];
+
+function merge_list(array $current, array $defaults): array
+{
+    $merged = [];
+    foreach ($defaults as $index => $template) {
+        $entry = $current[$index] ?? [];
+        $merged[] = array_merge($template, is_array($entry) ? $entry : []);
+    }
+
+    return $merged;
+}
+
+$heroTagline = get_setting('hero_tagline', 'Agencia creativa para negocios modernos');
+$heroTitle = get_setting('hero_title', 'Diseñamos experiencias digitales que elevan tu marca.');
+$heroDescription = get_setting('hero_description', 'Desde identidad visual hasta campañas omnicanal, acompañamos a tu negocio con estrategias medibles, contenido cautivador y tecnología lista para escalar.');
+$heroPrimaryCta = get_setting('hero_primary_cta', 'Quiero una propuesta');
+$heroSecondaryCta = get_setting('hero_secondary_cta', 'Ver servicios');
+$heroCardTitle = get_setting('hero_card_title', '+120 marcas impulsadas en LATAM');
+$heroCardDescription = get_setting('hero_card_description', 'Equipo multidisciplinario con estrategia, diseño, performance y producción. Todo en un solo lugar.');
+
+$stats = json_decode(get_setting('hero_stats', json_encode($defaultStats, JSON_UNESCAPED_UNICODE)), true) ?? [];
+$stats = merge_list($stats, $defaultStats);
+
+$services = json_decode(get_setting('services', json_encode($defaultServices, JSON_UNESCAPED_UNICODE)), true) ?? [];
+$services = merge_list($services, $defaultServices);
+
+$process = json_decode(get_setting('process', json_encode($defaultProcess, JSON_UNESCAPED_UNICODE)), true) ?? [];
+$process = merge_list($process, $defaultProcess);
+
+$testimonials = json_decode(get_setting('testimonials', json_encode($defaultTestimonials, JSON_UNESCAPED_UNICODE)), true) ?? [];
+$testimonials = merge_list($testimonials, $defaultTestimonials);
+
+$contactTitle = get_setting('contact_title', 'Hablemos de tu próximo proyecto');
+$contactDescription = get_setting('contact_description', 'Cuéntanos sobre tu negocio y te responderemos en menos de 48 horas.');
+$contactEmail = get_setting('contact_email', 'hola@studiocero.com');
+$contactPhone = get_setting('contact_phone', '+56 9 1234 5678');
+
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -320,6 +385,11 @@
       color: var(--muted);
     }
 
+    .footer a {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
     @media (max-width: 720px) {
       .nav-links {
         display: none;
@@ -349,31 +419,25 @@
     <section class="hero" id="hero">
       <div class="container hero-grid">
         <div>
-          <p><strong>Agencia creativa para negocios modernos</strong></p>
-          <h1>Diseñamos experiencias digitales que elevan tu marca.</h1>
-          <p>Desde identidad visual hasta campañas omnicanal, acompañamos a tu negocio con estrategias medibles, contenido cautivador y tecnología lista para escalar.</p>
+          <p><strong><?php echo htmlspecialchars($heroTagline); ?></strong></p>
+          <h1><?php echo htmlspecialchars($heroTitle); ?></h1>
+          <p><?php echo htmlspecialchars($heroDescription); ?></p>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="#contacto">Quiero una propuesta</a>
-            <a class="btn btn-outline" href="#servicios">Ver servicios</a>
+            <a class="btn btn-primary" href="#contacto"><?php echo htmlspecialchars($heroPrimaryCta); ?></a>
+            <a class="btn btn-outline" href="#servicios"><?php echo htmlspecialchars($heroSecondaryCta); ?></a>
           </div>
         </div>
         <div class="hero-card">
           <small>Resultados en 2024</small>
-          <h2>+120 marcas impulsadas en LATAM</h2>
-          <p>Equipo multidisciplinario con estrategia, diseño, performance y producción. Todo en un solo lugar.</p>
+          <h2><?php echo htmlspecialchars($heroCardTitle); ?></h2>
+          <p><?php echo htmlspecialchars($heroCardDescription); ?></p>
           <div class="stats">
-            <div class="stat">
-              <h3>3.2x</h3>
-              <p>Crecimiento promedio</p>
-            </div>
-            <div class="stat">
-              <h3>48h</h3>
-              <p>Tiempo de respuesta</p>
-            </div>
-            <div class="stat">
-              <h3>92%</h3>
-              <p>Clientes recurrentes</p>
-            </div>
+            <?php foreach ($stats as $stat): ?>
+              <div class="stat">
+                <h3><?php echo htmlspecialchars($stat['value']); ?></h3>
+                <p><?php echo htmlspecialchars($stat['label']); ?></p>
+              </div>
+            <?php endforeach; ?>
           </div>
         </div>
       </div>
@@ -386,22 +450,12 @@
           <p>Creamos soluciones integrales para marcas en crecimiento: estrategia, diseño y marketing digital enfocados en resultados.</p>
         </div>
         <div class="services-grid">
-          <article class="service-card">
-            <h3>Branding &amp; Identidad</h3>
-            <p>Nombres, logo, tono y storytelling coherentes para posicionar tu negocio.</p>
-          </article>
-          <article class="service-card">
-            <h3>Diseño Web</h3>
-            <p>Interfaces modernas, rápidas y responsivas listas para convertir visitas en clientes.</p>
-          </article>
-          <article class="service-card">
-            <h3>Marketing Digital</h3>
-            <p>Campañas en redes sociales y paid media con analítica avanzada para optimizar la inversión.</p>
-          </article>
-          <article class="service-card">
-            <h3>Contenido &amp; Foto</h3>
-            <p>Producción audiovisual profesional para redes, e-commerce y lanzamientos.</p>
-          </article>
+          <?php foreach ($services as $service): ?>
+            <article class="service-card">
+              <h3><?php echo htmlspecialchars($service['title']); ?></h3>
+              <p><?php echo htmlspecialchars($service['description']); ?></p>
+            </article>
+          <?php endforeach; ?>
         </div>
       </div>
     </section>
@@ -413,21 +467,13 @@
           <p>Trabajamos junto a tu equipo para entregar rápido, medir y optimizar.</p>
         </div>
         <div class="process">
-          <div class="process-step">
-            <span>01</span>
-            <h3>Diagnóstico</h3>
-            <p>Analizamos tu marca, competencia y objetivos para definir oportunidades reales.</p>
-          </div>
-          <div class="process-step">
-            <span>02</span>
-            <h3>Concepto creativo</h3>
-            <p>Diseñamos una propuesta visual y narrativa alineada a tu audiencia.</p>
-          </div>
-          <div class="process-step">
-            <span>03</span>
-            <h3>Ejecución + medición</h3>
-            <p>Lanzamos, medimos y ajustamos para maximizar impacto y ventas.</p>
-          </div>
+          <?php foreach ($process as $step): ?>
+            <div class="process-step">
+              <span><?php echo htmlspecialchars($step['step']); ?></span>
+              <h3><?php echo htmlspecialchars($step['title']); ?></h3>
+              <p><?php echo htmlspecialchars($step['description']); ?></p>
+            </div>
+          <?php endforeach; ?>
         </div>
       </div>
     </section>
@@ -439,18 +485,12 @@
           <p>Negocios reales que elevaron su presencia con Studio Cero.</p>
         </div>
         <div class="testimonials">
-          <article class="testimonial">
-            <p>"Nos ayudaron a relanzar nuestra marca y duplicamos las ventas en tres meses."</p>
-            <strong>Ana Torres · Retail Fashion</strong>
-          </article>
-          <article class="testimonial">
-            <p>"El nuevo sitio es rápido, elegante y los leads aumentaron desde la primera semana."</p>
-            <strong>Camilo Vargas · SaaS B2B</strong>
-          </article>
-          <article class="testimonial">
-            <p>"Nos encanta el equipo: creativos, ordenados y siempre con propuestas frescas."</p>
-            <strong>Lucía Gómez · Gastronomía</strong>
-          </article>
+          <?php foreach ($testimonials as $testimonial): ?>
+            <article class="testimonial">
+              <p><?php echo htmlspecialchars($testimonial['quote']); ?></p>
+              <strong><?php echo htmlspecialchars($testimonial['author']); ?></strong>
+            </article>
+          <?php endforeach; ?>
         </div>
       </div>
     </section>
@@ -460,9 +500,9 @@
         <div class="contact">
           <div class="contact-grid">
             <div>
-              <h2>Hablemos de tu próximo proyecto</h2>
-              <p>Cuéntanos sobre tu negocio y te responderemos en menos de 48 horas.</p>
-              <p><strong>Email:</strong> hola@studiocero.com<br><strong>Teléfono:</strong> +56 9 1234 5678</p>
+              <h2><?php echo htmlspecialchars($contactTitle); ?></h2>
+              <p><?php echo htmlspecialchars($contactDescription); ?></p>
+              <p><strong>Email:</strong> <?php echo htmlspecialchars($contactEmail); ?><br><strong>Teléfono:</strong> <?php echo htmlspecialchars($contactPhone); ?></p>
             </div>
             <form>
               <div class="form-group">
@@ -488,6 +528,7 @@
   <footer class="footer">
     <div class="container">
       <p>© 2024 Studio Cero. Todos los derechos reservados.</p>
+      <p><a href="/admin.php">Administración</a></p>
     </div>
   </footer>
 </body>
