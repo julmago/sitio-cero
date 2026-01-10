@@ -361,6 +361,7 @@ $contactPhone = get_setting('contact_phone', '');
     .input-with-icon input {
       padding-left: 44px;
     }
+
   </style>
 </head>
 <body>
