@@ -70,6 +70,34 @@ if (!$isLoggedIn && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?
     $message = 'Credenciales inválidas. Inténtalo nuevamente.';
 }
 
+if (!$isLoggedIn && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'recover') {
+    $username = clean_text($_POST['recovery_username'] ?? '');
+    $recoveryCode = clean_text($_POST['recovery_code'] ?? '');
+    $storedRecoveryCode = get_setting('admin_recovery_code', '');
+
+    if ($storedRecoveryCode === '' || $recoveryCode === '' || !hash_equals($storedRecoveryCode, $recoveryCode)) {
+        $message = 'Código de recuperación inválido. Verifica la información.';
+    } else {
+        $stmt = db()->prepare('SELECT id FROM admins WHERE username = ?');
+        $stmt->execute([$username]);
+        $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$admin) {
+            $message = 'No se encontró el usuario solicitado.';
+        } else {
+            try {
+                $newPassword = 'temp-' . bin2hex(random_bytes(4));
+            } catch (Exception $exception) {
+                $newPassword = 'temp-' . bin2hex(openssl_random_pseudo_bytes(4));
+            }
+
+            $update = db()->prepare('UPDATE admins SET password_hash = ? WHERE id = ?');
+            $update->execute([password_hash($newPassword, PASSWORD_DEFAULT), (int) $admin['id']]);
+            $message = 'Tu nueva contraseña temporal es: ' . $newPassword . '. Cámbiala al iniciar sesión.';
+        }
+    }
+}
+
 if ($isLoggedIn && $_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save') {
     set_setting('hero_tagline', clean_text($_POST['hero_tagline'] ?? ''));
     set_setting('hero_title', clean_text($_POST['hero_title'] ?? ''));
@@ -244,6 +272,21 @@ $contactPhone = get_setting('contact_phone', '');
       gap: 16px;
     }
 
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-icon {
+      font-size: 1rem;
+    }
+
     .grid-2 {
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     }
@@ -280,6 +323,12 @@ $contactPhone = get_setting('contact_phone', '');
       margin: 20px 0;
     }
 
+    .divider {
+      height: 1px;
+      background: rgba(148, 163, 184, 0.4);
+      margin: 24px 0;
+    }
+
     .nav {
       display: flex;
       justify-content: space-between;
@@ -312,20 +361,48 @@ $contactPhone = get_setting('contact_phone', '');
     <?php endif; ?>
 
     <?php if (!$isLoggedIn): ?>
-      <div class="card" style="max-width: 480px;">
+      <div class="card" style="max-width: 520px;">
         <form method="post">
           <input type="hidden" name="action" value="login">
           <div class="grid">
-            <div>
-              <label for="username">Usuario</label>
+            <div class="field">
+              <label class="field-label" for="username">
+                <span class="field-icon" aria-hidden="true">👤</span>
+                Usuario
+              </label>
               <input id="username" name="username" type="text" required>
             </div>
-            <div>
-              <label for="password">Contraseña</label>
+            <div class="field">
+              <label class="field-label" for="password">
+                <span class="field-icon" aria-hidden="true">🔒</span>
+                Contraseña
+              </label>
               <input id="password" name="password" type="password" required>
             </div>
             <button class="btn" type="submit">Ingresar</button>
             <p>Credenciales iniciales: admin / admin123 (cámbialas en la base de datos).</p>
+          </div>
+        </form>
+        <div class="divider"></div>
+        <form method="post">
+          <input type="hidden" name="action" value="recover">
+          <div class="grid">
+            <div class="field">
+              <label class="field-label" for="recovery_username">
+                <span class="field-icon" aria-hidden="true">👤</span>
+                Usuario
+              </label>
+              <input id="recovery_username" name="recovery_username" type="text" required>
+            </div>
+            <div class="field">
+              <label class="field-label" for="recovery_code">
+                <span class="field-icon" aria-hidden="true">🔒</span>
+                Código de recuperación
+              </label>
+              <input id="recovery_code" name="recovery_code" type="text" required>
+            </div>
+            <button class="btn" type="submit">Recuperar contraseña</button>
+            <p>Solicita el código de recuperación al administrador del sistema.</p>
           </div>
         </form>
       </div>
