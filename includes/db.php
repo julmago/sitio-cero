@@ -66,6 +66,7 @@ function db(): PDO
         'contact_description' => 'Cuéntanos sobre tu negocio y te responderemos en menos de 48 horas.',
         'contact_email' => 'hola@studiocero.com',
         'contact_phone' => '+56 9 1234 5678',
+        'admin_recovery_code' => 'RECUPERA-2024',
     ];
 
     $select = $pdo->prepare('SELECT `value` FROM settings WHERE `key` = ?');
