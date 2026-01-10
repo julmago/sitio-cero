@@ -342,6 +342,26 @@ $contactPhone = get_setting('contact_phone', '');
       width: 36px;
       height: 36px;
     }
+
+    .input-with-icon {
+      position: relative;
+    }
+
+    .input-with-icon svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      width: 18px;
+      height: 18px;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .input-with-icon input {
+      padding-left: 44px;
+    }
+
   </style>
 </head>
 <body>
@@ -373,12 +393,20 @@ $contactPhone = get_setting('contact_phone', '');
         <form method="post">
           <input type="hidden" name="action" value="login">
           <div class="grid">
-            <div>
+            <div class="input-with-icon">
               <label for="username">Usuario</label>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 21a8 8 0 1 0-16 0"></path>
+                <circle cx="12" cy="9" r="4"></circle>
+              </svg>
               <input id="username" name="username" type="text" required>
             </div>
-            <div>
+            <div class="input-with-icon">
               <label for="password">Contraseña</label>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="4" y="10" width="16" height="10" rx="2"></rect>
+                <path d="M8 10V7a4 4 0 1 1 8 0v3"></path>
+              </svg>
               <input id="password" name="password" type="password" required>
             </div>
             <button class="btn" type="submit">Ingresar</button>
