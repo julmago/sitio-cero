@@ -10,17 +10,22 @@ function db(): PDO
         return $pdo;
     }
 
-    $dataDir = __DIR__ . '/../data';
-    if (!is_dir($dataDir)) {
-        mkdir($dataDir, 0775, true);
-    }
+    $dbHost = getenv('DB_HOST') ?: 'localhost';
+    $dbPort = getenv('DB_PORT') ?: '3306';
+    $dbName = getenv('DB_NAME') ?: 'tiendastock';
+    $dbUser = getenv('DB_USER') ?: 'tiendastock';
+    $dbPass = getenv('DB_PASS') ?: '';
+    $dbCharset = getenv('DB_CHARSET') ?: 'utf8mb4';
 
-    $dbPath = $dataDir . '/site.db';
-    $pdo = new PDO('sqlite:' . $dbPath);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $dsn = "mysql:host={$dbHost};port={$dbPort};dbname={$dbName};charset={$dbCharset}";
+    $pdo = new PDO($dsn, $dbUser, $dbPass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ]);
 
-    $pdo->exec('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
-    $pdo->exec('CREATE TABLE IF NOT EXISTS admins (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL)');
+    $pdo->exec('CREATE TABLE IF NOT EXISTS settings (`key` VARCHAR(191) PRIMARY KEY, `value` TEXT NOT NULL)');
+    $pdo->exec('CREATE TABLE IF NOT EXISTS admins (id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(190) UNIQUE NOT NULL, password_hash VARCHAR(255) NOT NULL)');
 
     $adminCount = (int) $pdo->query('SELECT COUNT(*) FROM admins')->fetchColumn();
     if ($adminCount === 0) {
@@ -64,8 +69,8 @@ function db(): PDO
         'contact_phone' => '+56 9 1234 5678',
     ];
 
-    $select = $pdo->prepare('SELECT value FROM settings WHERE key = ?');
-    $insert = $pdo->prepare('INSERT INTO settings (key, value) VALUES (?, ?)');
+    $select = $pdo->prepare('SELECT `value` FROM settings WHERE `key` = ?');
+    $insert = $pdo->prepare('INSERT INTO settings (`key`, `value`) VALUES (?, ?)');
 
     foreach ($defaultSettings as $key => $value) {
         $select->execute([$key]);
@@ -80,7 +85,7 @@ function db(): PDO
 function get_setting(string $key, string $default = ''): string
 {
     $pdo = db();
-    $stmt = $pdo->prepare('SELECT value FROM settings WHERE key = ?');
+    $stmt = $pdo->prepare('SELECT `value` FROM settings WHERE `key` = ?');
     $stmt->execute([$key]);
     $value = $stmt->fetchColumn();
 
@@ -90,6 +95,6 @@ function get_setting(string $key, string $default = ''): string
 function set_setting(string $key, string $value): void
 {
     $pdo = db();
-    $stmt = $pdo->prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value');
+    $stmt = $pdo->prepare('INSERT INTO settings (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)');
     $stmt->execute([$key, $value]);
 }
